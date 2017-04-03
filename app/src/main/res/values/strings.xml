@@ -1,0 +1,8 @@
+<resources>
+    <string name="app_name">CrisisConnect</string>
+
+
+    <string name="title_activity_incallui">Call</string>
+    <string name="drawer_open_string">Open</string>
+    <string name="drawer_close_string">Close</string>
+</resources>

@@ -1,0 +1,107 @@
+<?xml version="1.0" encoding="utf-8"?>
+<android.support.v4.widget.DrawerLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:id="@+id/drawer_layout"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    >
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:paddingBottom="@dimen/activity_landing_margin"
+    android:paddingLeft="@dimen/activity_landing_margin"
+    android:paddingRight="@dimen/activity_landing_margin"
+    android:paddingTop="@dimen/activity_landing_margin"
+    >
+
+    <ListView
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:id="@+id/landingListView"
+        android:drawSelectorOnTop="true"
+        />
+
+
+
+    <TextView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="This is where the user will be hangin out..possibly waiting for other calls. Or make a new call from here"
+        android:id="@+id/landingTextView"
+        android:layout_alignParentTop="true"
+        android:layout_alignParentStart="true"
+        android:layout_marginTop="68dp"
+        android:visibility="gone"
+        android:layout_alignParentEnd="true" />
+
+    <Button
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="call"
+        android:visibility="gone"
+        android:id="@+id/callButton"
+        android:layout_centerVertical="true"
+        android:layout_alignEnd="@+id/landingTextView" />
+
+    <EditText
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:id="@+id/targetIP"
+        android:visibility="gone"
+        android:layout_alignParentStart="true"
+        android:layout_toStartOf="@+id/callButton"
+        android:layout_alignTop="@+id/callButton"
+        android:hint="Enter IP of target" />
+
+
+</RelativeLayout>
+    <!-- Drawer-->
+    <LinearLayout
+        android:id="@+id/left_drawer"
+        android:layout_width="260dp"
+        android:layout_height="match_parent"
+        android:background="@color/colorOffWhite"
+        android:layout_gravity="start"
+        android:orientation="vertical"
+        >
+        <RelativeLayout
+            android:layout_width="match_parent"
+            android:layout_height="200dp"
+            android:background="@color/colorPrimary"
+            >
+
+            <ImageView
+                android:layout_width="100dp"
+                android:layout_height="100dp"
+                android:id="@+id/left_big_image"
+                android:layout_centerHorizontal="true"
+                android:layout_marginTop="40dp"
+                android:src="@mipmap/ic_launcher_round"/>
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:textColor="@android:color/white"
+                android:textSize="20sp"
+                android:text="surabhi@gmail.com"
+                android:id="@+id/drawerEmail"
+                android:fontFamily="sans-serif-light"
+                android:gravity="center"
+                android:layout_centerHorizontal="true"
+                android:layout_below="@id/left_big_image"
+                android:layout_marginTop="15dp"
+                />
+
+        </RelativeLayout>
+
+        <ListView
+            android:id="@+id/left_drawer_listview"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:drawSelectorOnTop="true"
+            android:choiceMode="singleChoice"
+            android:divider="@android:color/transparent"
+            android:dividerHeight="0dp"
+            />
+    </LinearLayout>
+</android.support.v4.widget.DrawerLayout>
