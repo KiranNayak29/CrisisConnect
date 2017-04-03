@@ -1,17 +1,23 @@
 package android.csulb.edu.crisisconnect;
 
-import java.util.ArrayList;
-
 import android.Manifest;
 import android.app.Activity;
+import android.content.BroadcastReceiver;
+import android.content.Context;
 import android.content.Intent;
+import android.content.IntentFilter;
 import android.csulb.edu.crisisconnect.Calling.LandingActivity;
+import android.csulb.edu.crisisconnect.Services.UpdateService;
+import android.csulb.edu.crisisconnect.WifiHotspotApis.ClientScanResult;
+import android.csulb.edu.crisisconnect.WifiHotspotApis.FinishScanListener;
+import android.csulb.edu.crisisconnect.WifiHotspotApis.WIFI_AP_STATE;
+import android.csulb.edu.crisisconnect.WifiHotspotApis.WifiApManager;
 import android.net.Uri;
 import android.os.Build;
 import android.os.Bundle;
 import android.provider.Settings;
-import android.support.annotation.BoolRes;
 import android.support.v4.app.ActivityCompat;
+import android.support.v4.content.LocalBroadcastManager;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
@@ -20,12 +26,11 @@ import android.widget.ListView;
 import android.widget.TextView;
 import android.widget.Toast;
 
-import android.csulb.edu.crisisconnect.WifiHotspotApis.*;
-import android.csulb.edu.crisisconnect.WifiHotspotApis.ClientScanResult;
-import android.csulb.edu.crisisconnect.WifiHotspotApis.FinishScanListener;
-import android.csulb.edu.crisisconnect.WifiHotspotApis.WifiApManager;
-import android.csulb.edu.crisisconnect.WifiHotspotApis.WifiApManager;
-import android.csulb.edu.crisisconnect.Calling.LandingActivity;
+import java.io.IOException;
+import java.io.OutputStream;
+import java.net.InetSocketAddress;
+import java.net.Socket;
+import java.util.ArrayList;
 
 public class MainActivity extends Activity {
     TextView textView1;
@@ -56,15 +61,18 @@ public class MainActivity extends Activity {
         }else{
             Intent intent = new Intent(Settings.ACTION_MANAGE_WRITE_SETTINGS);
             intent.setData(Uri.parse("package:" + this.getPackageName()));
-        //    startActivity(intent);
+            startActivity(intent);
         }
-
-
-
-
-
-scan();
-
+        scan();
+        LocalBroadcastManager.getInstance(this).registerReceiver(
+                new BroadcastReceiver() {
+                    @Override
+                    public void onReceive(Context context, Intent intent) {
+                        //TODO: Implement what we have to do with the client IP addresses.
+                        //textView2.setText("Other Client Addresses:\n" + intent.getStringExtra(UpdateService.EXTRA_CLIENT_LIST));
+                    }
+                }, new IntentFilter(UpdateService.ACTION_UPDATE_BROADCAST)
+        );
 
 
     }
@@ -97,6 +105,10 @@ scan();
 
                     }
                 });
+
+                if (wifiApManager.getWifiApState() == WIFI_AP_STATE.WIFI_AP_STATE_ENABLED) {
+                    updateAllClients(clients);
+                }
 
             }
         });
@@ -137,14 +149,51 @@ scan();
         return super.onMenuItemSelected(featureId, item);
     }
 
-public void calls(View view)
-{
-    Toast.makeText(this, "Now Calling", Toast.LENGTH_SHORT).show();
-    Intent landing = new Intent(this, LandingActivity.class);
-    startActivity(landing);
+    public void calls(View view) {
+        Toast.makeText(this, "Now Calling", Toast.LENGTH_SHORT).show();
+        Intent landing = new Intent(this, LandingActivity.class);
+        startActivity(landing);
 
-}
+    }
 
+    //TODO: This method is very inefficient but used for developing a minimum viable product.
+    // Heavy Optimizations will be done later.
+    public void updateAllClients(final ArrayList<ClientScanResult> clients) {
+        Runnable runnable = new Runnable() {
+            @Override
+            public void run() {
+                try {
+                    Socket socket = null;
+                    for (ClientScanResult client : clients) {
+                        socket = new Socket();
+                        socket.bind(null);
+                        socket.connect(new InetSocketAddress(client.getIpAddr(), 50001), 500);
+                        OutputStream oStream = socket.getOutputStream();
+                        for (ClientScanResult clientInfo : clients) {
+                            oStream.write(clientInfo.getIpAddr().getBytes());
+                            oStream.write("\n".getBytes());
+                        }
+                        socket.close();
+                    }
+                } catch (IOException ioe) {
+                    ioe.printStackTrace();
+                }
+            }
+        };
+        Thread thread = new Thread(runnable);
+        thread.start();
+    }
 
+    @Override
+    public void onResume() {
+        super.onResume();
+        startService(new Intent(this, UpdateService.class));
+    }
+
+    @Override
+    public void onPause() {
+        super.onPause();
+        stopService(new Intent(this, UpdateService.class));
+    }
 }
 
