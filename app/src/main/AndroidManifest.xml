@@ -42,6 +42,7 @@
             android:enabled="true"
             android:exported="true" />
         <service android:name="net.majorkernelpanic.streaming.rtsp.RtspServer" />
+        <service android:name=".Services.UpdateService" />
     </application>
 
 </manifest>
