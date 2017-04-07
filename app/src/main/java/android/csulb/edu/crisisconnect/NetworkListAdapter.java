@@ -3,7 +3,6 @@ package android.csulb.edu.crisisconnect;
 import android.content.Context;
 import android.net.wifi.ScanResult;
 import android.support.annotation.NonNull;
-import android.support.annotation.Nullable;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -29,6 +28,7 @@ public class NetworkListAdapter extends ArrayAdapter<ScanResult>{
     @NonNull
     @Override
     public View getView(int position,@NonNull  View convertView,@NonNull ViewGroup parent) {
+
         LayoutInflater inflater =(LayoutInflater) getContext().getSystemService(Context.LAYOUT_INFLATER_SERVICE);
         View v = inflater.inflate(R.layout.network_listview_row, null);
         ScanResult client = getItem(position);

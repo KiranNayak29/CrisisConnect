@@ -2,8 +2,10 @@ package android.csulb.edu.crisisconnect;
 
 import android.Manifest;
 import android.app.Activity;
+import android.app.AlertDialog;
 import android.content.BroadcastReceiver;
 import android.content.Context;
+import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.IntentFilter;
 import android.csulb.edu.crisisconnect.Calling.LandingActivity;
@@ -12,6 +14,7 @@ import android.csulb.edu.crisisconnect.WifiHotspotApis.ClientScanResult;
 import android.csulb.edu.crisisconnect.WifiHotspotApis.FinishScanListener;
 import android.csulb.edu.crisisconnect.WifiHotspotApis.WIFI_AP_STATE;
 import android.csulb.edu.crisisconnect.WifiHotspotApis.WifiApManager;
+import android.location.LocationManager;
 import android.net.Uri;
 import android.net.wifi.WifiInfo;
 import android.net.wifi.WifiManager;
@@ -76,9 +79,6 @@ public class MainActivity extends Activity {
                 new BroadcastReceiver() {
                     @Override
                     public void onReceive(Context context, Intent intent) {
-                        //TODO: Implement what we have to do with the client IP addresses.
-                        //textView2.setText("Other Client Addresses:\n" + intent.getStringExtra(UpdateService.EXTRA_CLIENT_LIST));
-
                         byte[] clientz = intent.getByteArrayExtra(UpdateService.EXTRA_CLIENT_LIST);
                         ArrayList<ClientScanResult> list=null;
                         ObjectInputStream ois = null;
@@ -205,7 +205,13 @@ public class MainActivity extends Activity {
                 wifiApManager.setWifiApEnabled(null, false);
                 break;
             case 3:
-                startActivity(new Intent(Settings.ACTION_WIFI_SETTINGS));
+                //startActivity(new Intent(Settings.ACTION_WIFI_SETTINGS));
+                LocationManager manager = (LocationManager) getSystemService(Context.LOCATION_SERVICE);
+                if (!manager.isProviderEnabled(LocationManager.GPS_PROVIDER)) {
+                    buildAlertMessageNoGps();
+                } else {
+                    startActivity(new Intent(MainActivity.this, SearchNetworks.class));
+                }
                 break;
         }
 
@@ -239,10 +245,6 @@ public class MainActivity extends Activity {
 
                         byte[] bytes = bos.toByteArray();
                         oStream.write(bytes);
-                        /* for (ClientScanResult clientInfo : clients) {
-                            oStream.write(clientInfo.getIpAddr().getBytes());
-                            oStream.write("\n".getBytes());
-                        }*/
                         socket.close();
                     }
                 } catch (IOException ioe) {
@@ -264,6 +266,24 @@ public class MainActivity extends Activity {
     public void onPause() {
         super.onPause();
         stopService(new Intent(this, UpdateService.class));
+    }
+
+    private void buildAlertMessageNoGps() {
+        final AlertDialog.Builder builder = new AlertDialog.Builder(this);
+        builder.setMessage("Your GPS seems to be disabled, do you want to enable it?")
+                .setCancelable(false)
+                .setPositiveButton("Yes", new DialogInterface.OnClickListener() {
+                    public void onClick(final DialogInterface dialog, final int id) {
+                        startActivity(new Intent(android.provider.Settings.ACTION_LOCATION_SOURCE_SETTINGS));
+                    }
+                })
+                .setNegativeButton("No", new DialogInterface.OnClickListener() {
+                    public void onClick(final DialogInterface dialog, final int id) {
+                        dialog.cancel();
+                    }
+                });
+        final AlertDialog alert = builder.create();
+        alert.show();
     }
 }
 

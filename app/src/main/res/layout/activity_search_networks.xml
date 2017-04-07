@@ -6,16 +6,17 @@
     android:layout_height="match_parent"
     tools:context="android.csulb.edu.crisisconnect.SearchNetworks">
 
+
     <pl.bclogic.pulsator4droid.library.PulsatorLayout
         android:id="@+id/pulsator_layout"
         android:layout_width="match_parent"
         android:layout_height="350dp"
+        app:pulse_color="@color/colorAccent"
         app:pulse_count="5"
         app:pulse_duration="5000"
+        app:pulse_interpolator="Linear"
         app:pulse_repeat="0"
-        app:pulse_color="@color/colorAccent"
-        app:pulse_startFromScratch="true"
-        app:pulse_interpolator="Linear" >
+        app:pulse_startFromScratch="true">
 
         <ImageView
             android:id="@+id/imageView_phone"
@@ -28,7 +29,7 @@
     <ListView
         android:id="@+id/list_view"
         android:layout_width="match_parent"
-        android:layout_below="@id/pulsator_layout"
         android:layout_height="150dp"
-        android:layout_alignParentBottom="true" />
+        android:layout_alignParentBottom="true"
+        android:layout_below="@id/pulsator_layout" />
 </RelativeLayout>

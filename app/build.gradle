@@ -29,4 +29,5 @@ dependencies {
     compile 'com.koushikdutta.async:androidasync:2.+'
     testCompile 'junit:junit:4.12'
     compile project(':libstreaming')
+    compile 'pl.bclogic:pulsator4droid:1.0.3'
 }

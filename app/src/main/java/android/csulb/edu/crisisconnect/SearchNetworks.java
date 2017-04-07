@@ -12,6 +12,7 @@ import android.net.wifi.WifiConfiguration;
 import android.net.wifi.WifiManager;
 import android.os.Bundle;
 import android.text.InputType;
+import android.util.Log;
 import android.view.View;
 import android.widget.AdapterView;
 import android.widget.EditText;
@@ -71,7 +72,9 @@ public class SearchNetworks extends Activity {
     }
 
     public void processWifiClients(){
+        Log.e("CLIENTS", "IN");
         wifiResult = mManager.getScanResults();
+        Log.e("CLIENTS", String.valueOf(wifiResult.size()));
         List<String> clients = new ArrayList<String>();
         for(ScanResult wifiClient : wifiResult){
             clients.add(wifiClient.SSID);
