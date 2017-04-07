@@ -5,6 +5,7 @@ import android.content.Intent;
 import android.os.IBinder;
 import android.support.v4.content.LocalBroadcastManager;
 
+import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.net.ServerSocket;
@@ -39,11 +40,19 @@ public class UpdateService extends Service {
                         InputStream iStream = client.getInputStream();
                         int ch;
                         StringBuilder otherClientAddr = new StringBuilder();
-                        while ((ch = iStream.read()) != -1) {
+                        /*while ((ch = iStream.read()) != -1) {
                             otherClientAddr.append(String.valueOf((char) ch));
+                        }*/
+                      /*  byte[] k = new byte[10000];
+                        int count = iStream.read(k);*/
+                        ByteArrayOutputStream baos = new ByteArrayOutputStream();
+                        byte[] content = new byte[ 2048 ];
+                        int bytesRead = -1;
+                        while( ( bytesRead = iStream.read( content ) ) != -1 ) {
+                            baos.write( content, 0, bytesRead );
                         }
                         Intent updateIntent = new Intent(ACTION_UPDATE_BROADCAST);
-                        updateIntent.putExtra(EXTRA_CLIENT_LIST, otherClientAddr.toString());
+                        updateIntent.putExtra(EXTRA_CLIENT_LIST, content);
                         LocalBroadcastManager.getInstance(UpdateService.this).sendBroadcast(updateIntent);
                         client.close();
                         //The following functionality lets others to use Thread.interrupt() to stop this service.

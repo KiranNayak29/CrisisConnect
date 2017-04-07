@@ -16,7 +16,7 @@
 
 package android.csulb.edu.crisisconnect.WifiHotspotApis;
 
-public class ClientScanResult {
+public class ClientScanResult implements java.io.Serializable {
 
 	private String IpAddr;
 	private String HWAddr;

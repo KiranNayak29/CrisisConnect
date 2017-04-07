@@ -58,6 +58,13 @@ public class HTTPServerService extends Service {
                                                 i.putExtra(Util.KEY_INTENT_FILTER_OTHER_USERNAME, reqJSON.getString(Util.KEY_OTHER_USERNAME));
                                             }
                                             break;
+                                            case Util.OPERATION_TYPE_REQUEST_IMAGE: {
+                                                //send broascast to activities and show them a accept/reject interface
+                                                i.putExtra(Util.KEY_INTENT_FILTER_REASON, Util.INTENT_FILTER_REASON_NEW_INCOMING_IMAGE);
+                                                i.putExtra(Util.KEY_INTENT_FILTER_OTHER_USERNAME, reqJSON.getString(Util.KEY_OTHER_USERNAME));
+                                                i.putExtra(Util.KEY_INTENT_FILTER_IMAGE,reqJSON.getString(Util.KEY_Image));
+                                            }
+                                            break;
                                             case Util.OPERATION_TYPE_END_CALL: {
                                                 i.putExtra(Util.KEY_INTENT_FILTER_REASON, Util.INTENT_FILTER_REASON_CALL_ENDED);
                                                 //TODO: Do something
@@ -68,6 +75,13 @@ public class HTTPServerService extends Service {
                                                 i.putExtra(Util.KEY_INTENT_FILTER_REASON, Util.INTENT_FILTER_REASON_CALL_ACCEPTED);
 
                                                 Log.d(TAG, "CAllee accepted call");
+                                            }
+                                            break;
+                                            case Util.OPERATION_TYPE_ACCEPT_IMAGE: {
+                                                //TODO: Do something
+                                                i.putExtra(Util.KEY_INTENT_FILTER_REASON, Util.INTENT_FILTER_REASON_IMAGE_ACCEPTED);
+
+                                                Log.d(TAG, "CAllee accepted Image");
                                             }
                                             break;
                                             case Util.OPERATION_TYPE_REJECT_CALL: {

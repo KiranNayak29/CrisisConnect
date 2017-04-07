@@ -13,11 +13,14 @@ import android.csulb.edu.crisisconnect.WifiHotspotApis.FinishScanListener;
 import android.csulb.edu.crisisconnect.WifiHotspotApis.WIFI_AP_STATE;
 import android.csulb.edu.crisisconnect.WifiHotspotApis.WifiApManager;
 import android.net.Uri;
+import android.net.wifi.WifiInfo;
+import android.net.wifi.WifiManager;
 import android.os.Build;
 import android.os.Bundle;
 import android.provider.Settings;
 import android.support.v4.app.ActivityCompat;
 import android.support.v4.content.LocalBroadcastManager;
+import android.text.format.Formatter;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
@@ -26,11 +29,16 @@ import android.widget.ListView;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import java.io.ByteArrayInputStream;
+import java.io.ByteArrayOutputStream;
 import java.io.IOException;
+import java.io.ObjectInputStream;
+import java.io.ObjectOutputStream;
 import java.io.OutputStream;
 import java.net.InetSocketAddress;
 import java.net.Socket;
 import java.util.ArrayList;
+import java.util.Iterator;
 
 public class MainActivity extends Activity {
     TextView textView1;
@@ -70,6 +78,60 @@ public class MainActivity extends Activity {
                     public void onReceive(Context context, Intent intent) {
                         //TODO: Implement what we have to do with the client IP addresses.
                         //textView2.setText("Other Client Addresses:\n" + intent.getStringExtra(UpdateService.EXTRA_CLIENT_LIST));
+
+                        byte[] clientz = intent.getByteArrayExtra(UpdateService.EXTRA_CLIENT_LIST);
+                        ArrayList<ClientScanResult> list=null;
+                        ObjectInputStream ois = null;
+                        try {
+                            ois = new ObjectInputStream(new ByteArrayInputStream(clientz));
+                        } catch (IOException e) {
+                            e.printStackTrace();
+                        }
+                        try {
+                            try {
+
+                                 list = (ArrayList<ClientScanResult>) ois.readObject();
+                            } catch (IOException e) {
+                                e.printStackTrace();
+                            } catch (ClassNotFoundException e) {
+                                e.printStackTrace();
+                            }
+
+                        } finally {
+                            try {
+                                ois.close();
+                            } catch (IOException e) {
+                                e.printStackTrace();
+                            }
+                        }
+                      /*  ByteArrayOutputStream bos = new ByteArrayOutputStream();
+                        ObjectOutputStream oos = new ObjectOutputStream(bos);
+                        oos.writeObject(clients);  */
+                        WifiManager wifiMgr = (WifiManager) getApplicationContext().getSystemService(WIFI_SERVICE);
+                        WifiInfo wifiInfo = wifiMgr.getConnectionInfo();
+                        int ip = wifiInfo.getIpAddress();
+                        String localIP = Formatter.formatIpAddress(ip);
+
+                        for(ClientScanResult client : wifiApManager.results)
+                        {Iterator<ClientScanResult> iter = list.iterator();
+                            while(iter.hasNext()){
+                                ClientScanResult item = iter.next();
+                                if( item.getIpAddr().equals(client.getIpAddr()) )
+                                {
+                                    iter.remove();
+                                }
+                            }
+                        }
+
+
+                        for (ClientScanResult client : list) {
+
+                           if(!client.getIpAddr().equals(localIP)){
+                               wifiApManager.results.add(client);
+                            Toast.makeText(getApplicationContext(), client.getIpAddr(), Toast.LENGTH_SHORT).show();}
+                        }
+                        Toast.makeText(getApplicationContext(), "updated", Toast.LENGTH_SHORT).show();
+
                     }
                 }, new IntentFilter(UpdateService.ACTION_UPDATE_BROADCAST)
         );
@@ -107,6 +169,7 @@ public class MainActivity extends Activity {
                 });
 
                 if (wifiApManager.getWifiApState() == WIFI_AP_STATE.WIFI_AP_STATE_ENABLED) {
+                    Toast.makeText(MainActivity.this, "HIII", Toast.LENGTH_SHORT).show();
                     updateAllClients(clients);
                 }
 
@@ -150,6 +213,7 @@ public class MainActivity extends Activity {
     }
 
     public void calls(View view) {
+
         Toast.makeText(this, "Now Calling", Toast.LENGTH_SHORT).show();
         Intent landing = new Intent(this, LandingActivity.class);
         startActivity(landing);
@@ -169,10 +233,16 @@ public class MainActivity extends Activity {
                         socket.bind(null);
                         socket.connect(new InetSocketAddress(client.getIpAddr(), 50001), 500);
                         OutputStream oStream = socket.getOutputStream();
-                        for (ClientScanResult clientInfo : clients) {
+                        ByteArrayOutputStream bos = new ByteArrayOutputStream();
+                        ObjectOutputStream oos = new ObjectOutputStream(bos);
+                        oos.writeObject(clients);
+
+                        byte[] bytes = bos.toByteArray();
+                        oStream.write(bytes);
+                        /* for (ClientScanResult clientInfo : clients) {
                             oStream.write(clientInfo.getIpAddr().getBytes());
                             oStream.write("\n".getBytes());
-                        }
+                        }*/
                         socket.close();
                     }
                 } catch (IOException ioe) {

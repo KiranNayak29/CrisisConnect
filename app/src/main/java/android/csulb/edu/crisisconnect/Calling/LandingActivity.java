@@ -12,8 +12,13 @@ import android.csulb.edu.crisisconnect.ClientAdapter;
 import android.csulb.edu.crisisconnect.MainActivity;
 import android.csulb.edu.crisisconnect.R;
 import android.csulb.edu.crisisconnect.WifiHotspotApis.ClientScanResult;
+import android.graphics.Bitmap;
+import android.graphics.BitmapFactory;
+import android.net.Uri;
+import android.net.wifi.WifiInfo;
 import android.net.wifi.WifiManager;
 import android.os.Bundle;
+import android.os.Environment;
 import android.preference.PreferenceManager;
 //import android.support.design.widget.FloatingActionButton;
 import android.support.v4.content.LocalBroadcastManager;
@@ -22,12 +27,14 @@ import android.support.v4.widget.DrawerLayout;
 import android.support.v7.app.ActionBarDrawerToggle;
 import android.support.v7.app.AppCompatActivity;
 import android.text.format.Formatter;
+import android.util.Base64;
 import android.util.Log;
 import android.view.MenuItem;
 import android.view.View;
 import android.view.WindowManager;
 import android.widget.AdapterView;
 import android.widget.Button;
+import android.widget.ImageView;
 import android.widget.ListView;
 import android.widget.TextView;
 import android.widget.Toast;
@@ -48,7 +55,14 @@ import android.csulb.edu.crisisconnect.MainActivity;
 import org.json.JSONException;
 import org.json.JSONObject;
 
+import java.io.ByteArrayOutputStream;
+import java.io.File;
+import java.io.FileNotFoundException;
+import java.io.FileOutputStream;
+import java.io.IOException;
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
+import java.util.Date;
 
 public class LandingActivity extends AppCompatActivity {
     private static String myIP;
@@ -61,12 +75,14 @@ public class LandingActivity extends AppCompatActivity {
     private int callState;
     private static final int CALL_STATE_IN_CALL=1;
     private static final int CALL_STATE_AVAILABLE=2;
+    String ImagePath="";
     //drawer
     private DrawerLayout mDrawerLayout;
     private ActionBarDrawerToggle mDrawerToggle;
     private ListView mDrawerList;
     WifiApManager wifiApManager;
     MainActivity mains;
+    static String RW;
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -94,6 +110,7 @@ public class LandingActivity extends AppCompatActivity {
                 otherUsernameWhenWeCall = a.getHWAddr();
                 //final String rawIP = ((Contact) adapter.getItem(position)).getIp();
                 final String rawIP = a.getIpAddr();
+                RW = rawIP;
                 new AlertDialog.Builder(LandingActivity.this)
                         .setTitle(otherUsernameWhenWeCall)
 //                        .setMessage("Do you want to accept a call from " + otherUsername)
@@ -115,16 +132,18 @@ public class LandingActivity extends AppCompatActivity {
                                 pDialog.setCancelable(false);
                                 pDialog.show();
 
+
                                 performCall(rawIP);
                             }
                         })
-                        .setNegativeButton("Cancel", new DialogInterface.OnClickListener() {
+                        .setNegativeButton("Send Image", new DialogInterface.OnClickListener() {
                             @Override
                             public void onClick(DialogInterface dialog, int which) {
                                 /*Intent i=new Intent(LandingActivity.this,HistoryActivity.class);
                                 i.putExtra(Util.KEY_OTHER_USERNAME,otherUsernameWhenWeCall);
                                 startActivity(i);*/
-                                Toast.makeText(LandingActivity.this, "Canceled", Toast.LENGTH_SHORT).show();
+                                Toast.makeText(LandingActivity.this, "Sending Image", Toast.LENGTH_SHORT).show();
+                                sendImage();
                             }
                         })
                         .setIcon(android.R.drawable.ic_dialog_info)
@@ -205,6 +224,68 @@ public class LandingActivity extends AppCompatActivity {
         Toast.makeText(LandingActivity.this, "Calling the other party", Toast.LENGTH_SHORT).show();
     }
 
+    // image
+
+    private void sendImage()
+    {
+        Intent intent = new Intent(Intent.ACTION_GET_CONTENT);
+        intent.setType("image/*");
+        startActivityForResult(intent, 20);
+    }
+
+    public void onActivityResult(int requestCode, int resultCode, Intent data)
+    {
+        Uri uri = data.getData();
+        String ImagePath = uri.toString();
+        performimageshare(RW,uri);
+    }
+    private void performimageshare(String rawIP,Uri ImagePath) {
+
+       // String path = ImagePath;
+        Bitmap bm = null;
+        try {
+            bm = BitmapFactory.decodeStream(getContentResolver().openInputStream(ImagePath));
+        } catch (FileNotFoundException e) {
+            e.printStackTrace();
+        }
+        ByteArrayOutputStream baos = new ByteArrayOutputStream();
+        bm.compress(Bitmap.CompressFormat.JPEG, 100, baos); //bm is the bitmap object
+        byte[] b = baos.toByteArray();
+        String encodedImage = Base64.encodeToString(b, Base64.DEFAULT);
+        callState=CALL_STATE_IN_CALL;
+        //build a proper ip address
+        String calleeIPFullHTTP = Util.PROTOCOL_HTTP + rawIP + ":" + Util.HTTP_PORT;
+        SharedPreferences prefs= PreferenceManager.getDefaultSharedPreferences(this);
+
+        WifiManager wifiMgr = (WifiManager) getApplicationContext().getSystemService(WIFI_SERVICE);
+        WifiInfo wifiInfo = wifiMgr.getConnectionInfo();
+        int ip = wifiInfo.getIpAddress();
+        String localIP = Formatter.formatIpAddress(ip);
+
+        String myUsername=prefs.getString(Util.KEY_PREFS_USERNAME,rawIP);
+        JSONObject requestJSON = new JSONObject();
+        try {
+            requestJSON.put(Util.KEY_OPERATION, Util.OPERATION_TYPE_REQUEST_IMAGE);
+            requestJSON.put(Util.KEY_OTHER_USERNAME,localIP);
+            requestJSON.put(Util.KEY_Image,encodedImage);
+            // Not really required: in the service, we can get this ip anyway: requestJSON.put(Util.KEY_CALLER_IP,myIP);   //while sending caller's ip,send it raw(without http and port no) - its the receivers responsibility to handle a raw ip
+
+        } catch (JSONException e) {
+            e.printStackTrace();
+        }
+
+
+        AsyncHttpRequest req = new AsyncHttpPost(calleeIPFullHTTP);
+
+        AsyncHttpRequestBody body = new JSONObjectBody(requestJSON);
+        req.setBody(body);
+        AsyncHttpClient.getDefaultInstance().executeJSONObject(req, null);
+        //show ui showing that a call is being attempted
+        Toast.makeText(LandingActivity.this, "Sending Image", Toast.LENGTH_SHORT).show();
+    }
+
+
+    // image
     @Override
     protected void onResume() {
         super.onResume();
@@ -237,6 +318,53 @@ public class LandingActivity extends AppCompatActivity {
 
 
             switch(intent.getIntExtra(Util.KEY_INTENT_FILTER_REASON, Util.INTENT_FILTER_REASON_NO_REASON)) {
+
+                case Util.INTENT_FILTER_REASON_NEW_INCOMING_IMAGE:
+                    final String image = intent.getStringExtra(Util.KEY_INTENT_FILTER_IMAGE);
+                    final String ip = intent.getStringExtra(Util.KEY_INTENT_FILTER_OTHER_USERNAME);
+                    byte[] decodedString = Base64.decode(image, Base64.DEFAULT);
+                    Bitmap decodedByte = BitmapFactory.decodeByteArray(decodedString, 0, decodedString.length);
+                    ImageView imagess = (ImageView) findViewById(R.id.Image);
+                  //  imagess.setImageBitmap(decodedByte);
+                    String timeStamp = new SimpleDateFormat("yyyyMMdd_HHmmss").format(new Date());
+                    String imageFileName = "JPEG_" + timeStamp + "_";
+                    File path = Environment.getExternalStoragePublicDirectory(
+                            Environment.DIRECTORY_DOWNLOADS);
+                    File currentimage=null;
+                    try {
+                       currentimage  = File.createTempFile(imageFileName,".jpg",path);
+                    } catch (IOException e) {
+                        e.printStackTrace();
+                    }
+
+
+                    FileOutputStream out = null;
+                    try {
+                        out = new FileOutputStream(currentimage);
+                        decodedByte.compress(Bitmap.CompressFormat.PNG, 100, out); // bmp is your Bitmap instance
+                        // PNG is a lossless format, the compression factor (100) is ignored
+                    } catch (Exception e) {
+                        e.printStackTrace();
+                    } finally {
+                        try {
+                            if (out != null) {
+                                out.close();
+                            }
+                        } catch (IOException e) {
+                            e.printStackTrace();
+                        }
+                    }
+                    Intent intentshowimage = new Intent();
+                    intentshowimage.setAction(Intent.ACTION_VIEW);
+                    intentshowimage.setDataAndType(Uri.parse("file://" + currentimage), "image/*");
+                    startActivity(intentshowimage);
+                    Toast.makeText(context, "Received Image : " + currentimage + "from : " + ip, Toast.LENGTH_SHORT).show();
+
+                    // /storeImage(decodedByte);
+
+
+
+                    break;
                 case Util.INTENT_FILTER_REASON_NEW_INCOMING_CALL:
                     //show alert showing if user wants to accept or not
                     final String otherUsername=intent.getStringExtra(Util.KEY_INTENT_FILTER_OTHER_USERNAME);
@@ -379,4 +507,7 @@ public class LandingActivity extends AppCompatActivity {
         }
         return super.onOptionsItemSelected(item);
     }
+
+
+
 }
