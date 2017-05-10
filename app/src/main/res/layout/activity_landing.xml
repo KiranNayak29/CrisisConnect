@@ -6,58 +6,56 @@
     >
 
     <RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
-    xmlns:tools="http://schemas.android.com/tools"
-    android:layout_width="match_parent"
-    android:layout_height="match_parent"
-    xmlns:app="http://schemas.android.com/apk/res-auto"
-    android:paddingBottom="@dimen/activity_landing_margin"
-    android:paddingLeft="@dimen/activity_landing_margin"
-    android:paddingRight="@dimen/activity_landing_margin"
-    android:paddingTop="@dimen/activity_landing_margin"
-    >
-
-    <ListView
         android:layout_width="match_parent"
         android:layout_height="match_parent"
+        android:paddingBottom="@dimen/activity_landing_margin"
+        android:paddingLeft="@dimen/activity_landing_margin"
+        android:paddingRight="@dimen/activity_landing_margin"
+        android:paddingTop="@dimen/activity_landing_margin">
+
+    <ListView
         android:id="@+id/landingListView"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
         android:drawSelectorOnTop="true"
+        android:longClickable="true"
         />
         <ImageView
+            android:id="@+id/Image"
             android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:id="@+id/Image"/>
+            android:layout_height="wrap_content" />
 
 
 
     <TextView
+        android:id="@+id/landingTextView"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:text="This is where the user will be hangin out..possibly waiting for other calls. Or make a new call from here"
-        android:id="@+id/landingTextView"
-        android:layout_alignParentTop="true"
+        android:layout_alignParentEnd="true"
         android:layout_alignParentStart="true"
+        android:layout_alignParentTop="true"
         android:layout_marginTop="68dp"
-        android:visibility="gone"
-        android:layout_alignParentEnd="true" />
+        android:text="This is where the user will be hangin out..possibly waiting for other calls. Or make a new call from here"
+        android:visibility="gone" />
 
     <Button
+        android:id="@+id/callButton"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:text="call"
-        android:visibility="gone"
-        android:id="@+id/callButton"
+        android:layout_alignEnd="@+id/landingTextView"
         android:layout_centerVertical="true"
-        android:layout_alignEnd="@+id/landingTextView" />
+        android:text="call"
+        android:visibility="gone" />
 
     <EditText
+        android:id="@+id/targetIP"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:id="@+id/targetIP"
-        android:visibility="gone"
         android:layout_alignParentStart="true"
-        android:layout_toStartOf="@+id/callButton"
         android:layout_alignTop="@+id/callButton"
-        android:hint="Enter IP of target" />
+        android:layout_toStartOf="@+id/callButton"
+        android:hint="Enter IP of target"
+        android:visibility="gone" />
 
 
 </RelativeLayout>
@@ -66,8 +64,8 @@
         android:id="@+id/left_drawer"
         android:layout_width="260dp"
         android:layout_height="match_parent"
-        android:background="@color/colorOffWhite"
         android:layout_gravity="start"
+        android:background="@color/colorOffWhite"
         android:orientation="vertical"
         >
         <RelativeLayout
@@ -77,24 +75,24 @@
             >
 
             <ImageView
+                android:id="@+id/left_big_image"
                 android:layout_width="100dp"
                 android:layout_height="100dp"
-                android:id="@+id/left_big_image"
                 android:layout_centerHorizontal="true"
                 android:layout_marginTop="40dp"
                 android:src="@mipmap/ic_launcher_round"/>
             <TextView
+                android:id="@+id/drawerEmail"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:textColor="@android:color/white"
-                android:textSize="20sp"
-                android:text="surabhi@gmail.com"
-                android:id="@+id/drawerEmail"
+                android:layout_below="@id/left_big_image"
+                android:layout_centerHorizontal="true"
+                android:layout_marginTop="15dp"
                 android:fontFamily="sans-serif-light"
                 android:gravity="center"
-                android:layout_centerHorizontal="true"
-                android:layout_below="@id/left_big_image"
-                android:layout_marginTop="15dp"
+                android:text="surabhi@gmail.com"
+                android:textColor="@android:color/white"
+                android:textSize="20sp"
                 />
 
         </RelativeLayout>
@@ -103,10 +101,10 @@
             android:id="@+id/left_drawer_listview"
             android:layout_width="match_parent"
             android:layout_height="match_parent"
-            android:drawSelectorOnTop="true"
             android:choiceMode="singleChoice"
             android:divider="@android:color/transparent"
             android:dividerHeight="0dp"
+            android:drawSelectorOnTop="true"
             />
 
     </LinearLayout>

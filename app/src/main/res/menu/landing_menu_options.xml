@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="utf-8"?>
+<menu xmlns:android="http://schemas.android.com/apk/res/android">
+    <item
+        android:id="@+id/option_voice"
+        android:title="@string/option_voice" />
+    <item
+        android:id="@+id/option_video"
+        android:title="@string/option_video" />
+    <item
+        android:id="@+id/option_image"
+        android:title="@string/option_image" />
+    <item
+        android:id="@+id/option_text"
+        android:title="@string/option_text" />
+</menu>

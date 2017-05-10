@@ -9,6 +9,7 @@ import android.content.pm.PackageManager;
 import android.csulb.edu.crisisconnect.broadcastreceiver.WifiScanReceiver;
 import android.net.wifi.ScanResult;
 import android.net.wifi.WifiConfiguration;
+import android.net.wifi.WifiInfo;
 import android.net.wifi.WifiManager;
 import android.os.Bundle;
 import android.text.InputType;
@@ -19,17 +20,18 @@ import android.widget.EditText;
 import android.widget.ListView;
 import android.widget.Toast;
 
-import java.util.ArrayList;
 import java.util.List;
 
 import pl.bclogic.pulsator4droid.library.PulsatorLayout;
 
 public class SearchNetworks extends Activity {
+    private static final String TAG = "SearchNetworks";
     PulsatorLayout pulseLayout = null;
     WifiManager mManager = null;
     WifiScanReceiver wifiReceiver = null;
     IntentFilter wifiScanFilter = null;
     List<ScanResult> wifiResult = null;
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -72,13 +74,9 @@ public class SearchNetworks extends Activity {
     }
 
     public void processWifiClients(){
-        Log.e("CLIENTS", "IN");
+        Log.d(TAG, "IN CLIENTS");
         wifiResult = mManager.getScanResults();
-        Log.e("CLIENTS", String.valueOf(wifiResult.size()));
-        List<String> clients = new ArrayList<String>();
-        for(ScanResult wifiClient : wifiResult){
-            clients.add(wifiClient.SSID);
-        }
+        Log.d(TAG, "Clients size: " + String.valueOf(wifiResult.size()));
         ListView lv = (ListView) findViewById(R.id.list_view);
         NetworkListAdapter adapter = new NetworkListAdapter(this, R.layout.network_listview_row, wifiResult);
         if(!adapter.isEmpty()) {
@@ -86,7 +84,8 @@ public class SearchNetworks extends Activity {
             lv.setOnItemClickListener(new AdapterView.OnItemClickListener() {
                 @Override
                 public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
-                    connectWifi(parent, view, position, id);
+                    ScanResult client = (ScanResult) parent.getItemAtPosition(position);
+                    connectWifi(client);
                 }
             });
         }
@@ -95,19 +94,17 @@ public class SearchNetworks extends Activity {
         }
     }
 
-    public void connectWifi(AdapterView<?> parent, View view, int position, long id){
-        ScanResult client = (ScanResult) parent.getItemAtPosition(position);
+    public void connectWifi(ScanResult client) {
         if(client == null || client.SSID.trim().equals("")){
             Toast.makeText(this, "Unable to connect!", Toast.LENGTH_LONG).show();
             return;
         }
         final WifiConfiguration configuration = new WifiConfiguration();
-        //configuration.SSID = "\"" + client.SSID + "\"";
         configuration.SSID = String.format("\"%s\"", client.SSID);
         configuration.priority = 99999;
         String security = client.capabilities;
 
-        if(security.contains("WPA2") || security.contains("WPA")){
+        if (security.contains("WPA")) {//|| security.contains("WPA2")){
             final AlertDialog.Builder builder = new AlertDialog.Builder(this);
             final EditText eText = new EditText(this);
             eText.setInputType(InputType.TYPE_CLASS_TEXT | InputType.TYPE_TEXT_VARIATION_PASSWORD);
@@ -153,8 +150,11 @@ public class SearchNetworks extends Activity {
     }
 
     public void connectWifi(WifiConfiguration configuration){
+        WifiInfo info = mManager.getConnectionInfo();
+        int previousNetworkID = info.getNetworkId();
         int networkId = mManager.addNetwork(configuration);
         mManager.disconnect();
+        mManager.disableNetwork(previousNetworkID);
         mManager.enableNetwork(networkId, true);
         boolean connectStatus = mManager.reconnect();
         if(connectStatus){

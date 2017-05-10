@@ -1,8 +1,5 @@
 package android.csulb.edu.crisisconnect.Calling;
 
-/**
- * Created by kedar on 4/3/2016.
- */
 public class Util {
     public static final String KEY_OPERATION="keyrequesttype";
     //    public static final String KEY_DECISION="keydecision";
@@ -43,12 +40,8 @@ public class Util {
 
     public static final String GENDER_MALE = "malegender";
     public static final String GENDER_FEMALE = "femalegender";
-
-
-
-
-    public static String PROTOCOL_HTTP = "http://";
     public static final int HTTP_PORT = 5000;
-    public static String PROTOCOL_RTSP = "rtsp://";
     public static final int RTSP_PORT = 8086; //using the default port that libstreaming uses(8086)
+    public static String PROTOCOL_HTTP = "http://";
+    public static String PROTOCOL_RTSP = "rtsp://";
 }

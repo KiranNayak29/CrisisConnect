@@ -1,7 +1,6 @@
 package android.csulb.edu.crisisconnect;
 
 import android.Manifest;
-import android.app.Activity;
 import android.app.AlertDialog;
 import android.content.BroadcastReceiver;
 import android.content.Context;
@@ -14,16 +13,20 @@ import android.csulb.edu.crisisconnect.WifiHotspotApis.ClientScanResult;
 import android.csulb.edu.crisisconnect.WifiHotspotApis.FinishScanListener;
 import android.csulb.edu.crisisconnect.WifiHotspotApis.WIFI_AP_STATE;
 import android.csulb.edu.crisisconnect.WifiHotspotApis.WifiApManager;
+import android.csulb.edu.crisisconnect.database.MessageHistoryDbHelper;
 import android.location.LocationManager;
 import android.net.Uri;
 import android.net.wifi.WifiInfo;
 import android.net.wifi.WifiManager;
+import android.os.AsyncTask;
 import android.os.Build;
 import android.os.Bundle;
 import android.provider.Settings;
 import android.support.v4.app.ActivityCompat;
 import android.support.v4.content.LocalBroadcastManager;
+import android.support.v7.app.AppCompatActivity;
 import android.text.format.Formatter;
+import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
@@ -43,10 +46,13 @@ import java.net.Socket;
 import java.util.ArrayList;
 import java.util.Iterator;
 
-public class MainActivity extends Activity {
+import static android.os.Build.VERSION_CODES.M;
+
+public class MainActivity extends AppCompatActivity {
+    private static final String TAG = "MainActivity";
     TextView textView1;
     WifiApManager wifiApManager;
-
+    private MessageHistoryDbHelper dbHelper = null;
 
     /** Called when the activity is first created. */
     @Override
@@ -57,19 +63,18 @@ public class MainActivity extends Activity {
         String[] PERMISSIONS = {Manifest.permission.INTERNET, Manifest.permission.CHANGE_WIFI_STATE,
                 Manifest.permission.ACCESS_WIFI_STATE, Manifest.permission.ACCESS_NETWORK_STATE,
                 Manifest.permission.CHANGE_NETWORK_STATE,Manifest.permission.WRITE_SETTINGS,Manifest.permission.WRITE_EXTERNAL_STORAGE,
-                Manifest.permission.RECORD_AUDIO,Manifest.permission.CAMERA,Manifest.permission.READ_PHONE_STATE};
+                Manifest.permission.RECORD_AUDIO, Manifest.permission.CAMERA, Manifest.permission.READ_PHONE_STATE,
+                Manifest.permission.ACCESS_FINE_LOCATION, Manifest.permission.ACCESS_COARSE_LOCATION};
 
         ActivityCompat.requestPermissions(this, PERMISSIONS, PERMISSION_ALL);
         textView1 = (TextView) findViewById(R.id.textView1);
         wifiApManager = new WifiApManager(this);
-//
+
         Boolean retVal = false;
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
+        if (Build.VERSION.SDK_INT >= M) {
             retVal = Settings.System.canWrite(this);}
 
-        if(retVal){
-            Toast.makeText(this, "Write allowed :-)", Toast.LENGTH_LONG).show();
-        }else{
+        if (!retVal) {
             Intent intent = new Intent(Settings.ACTION_MANAGE_WRITE_SETTINGS);
             intent.setData(Uri.parse("package:" + this.getPackageName()));
             startActivity(intent);
@@ -91,12 +96,11 @@ public class MainActivity extends Activity {
                             try {
 
                                  list = (ArrayList<ClientScanResult>) ois.readObject();
-                            } catch (IOException e) {
-                                e.printStackTrace();
                             } catch (ClassNotFoundException e) {
                                 e.printStackTrace();
+                            } catch (IOException e) {
+                                e.printStackTrace();
                             }
-
                         } finally {
                             try {
                                 ois.close();
@@ -104,16 +108,14 @@ public class MainActivity extends Activity {
                                 e.printStackTrace();
                             }
                         }
-                      /*  ByteArrayOutputStream bos = new ByteArrayOutputStream();
-                        ObjectOutputStream oos = new ObjectOutputStream(bos);
-                        oos.writeObject(clients);  */
+
                         WifiManager wifiMgr = (WifiManager) getApplicationContext().getSystemService(WIFI_SERVICE);
                         WifiInfo wifiInfo = wifiMgr.getConnectionInfo();
                         int ip = wifiInfo.getIpAddress();
                         String localIP = Formatter.formatIpAddress(ip);
 
-                        for(ClientScanResult client : wifiApManager.results)
-                        {Iterator<ClientScanResult> iter = list.iterator();
+                        for (ClientScanResult client : wifiApManager.results) {
+                            Iterator<ClientScanResult> iter = list.iterator();
                             while(iter.hasNext()){
                                 ClientScanResult item = iter.next();
                                 if( item.getIpAddr().equals(client.getIpAddr()) )
@@ -123,14 +125,12 @@ public class MainActivity extends Activity {
                             }
                         }
 
-
                         for (ClientScanResult client : list) {
 
                            if(!client.getIpAddr().equals(localIP)){
                                wifiApManager.results.add(client);
                             Toast.makeText(getApplicationContext(), client.getIpAddr(), Toast.LENGTH_SHORT).show();}
                         }
-                        Toast.makeText(getApplicationContext(), "updated", Toast.LENGTH_SHORT).show();
 
                     }
                 }, new IntentFilter(UpdateService.ACTION_UPDATE_BROADCAST)
@@ -145,7 +145,7 @@ public class MainActivity extends Activity {
 
             @Override
             public void onFinishScan(final ArrayList<ClientScanResult> clients) {
-
+                Log.d(TAG, "Finished Scanning...Populating list...");
                 textView1.setText("WifiApState: " + wifiApManager.getWifiApState() + "\n\n");
                 textView1.append("Clients: \n");
                 for (ClientScanResult clientScanResult : clients) {
@@ -169,20 +169,12 @@ public class MainActivity extends Activity {
                 });
 
                 if (wifiApManager.getWifiApState() == WIFI_AP_STATE.WIFI_AP_STATE_ENABLED) {
-                    Toast.makeText(MainActivity.this, "HIII", Toast.LENGTH_SHORT).show();
                     updateAllClients(clients);
                 }
 
             }
         });
     }
-
-    public void refresh()
-    {
-
-
-    }
-
 
     public boolean onCreateOptionsMenu(Menu menu) {
         menu.add(0, 0, 0, "Get Clients");
@@ -192,11 +184,11 @@ public class MainActivity extends Activity {
         return super.onCreateOptionsMenu(menu);
     }
 
-    public boolean onMenuItemSelected(int featureId, MenuItem item) {
+
+    public boolean onOptionsItemSelected(MenuItem item) {
         switch (item.getItemId()) {
             case 0:
                 scan();
-                refresh();
                 break;
             case 1:
                 wifiApManager.setWifiApEnabled(null, true);
@@ -205,8 +197,8 @@ public class MainActivity extends Activity {
                 wifiApManager.setWifiApEnabled(null, false);
                 break;
             case 3:
-                //startActivity(new Intent(Settings.ACTION_WIFI_SETTINGS));
                 LocationManager manager = (LocationManager) getSystemService(Context.LOCATION_SERVICE);
+
                 if (!manager.isProviderEnabled(LocationManager.GPS_PROVIDER)) {
                     buildAlertMessageNoGps();
                 } else {
@@ -215,19 +207,14 @@ public class MainActivity extends Activity {
                 break;
         }
 
-        return super.onMenuItemSelected(featureId, item);
+        return super.onOptionsItemSelected(item);
     }
 
     public void calls(View view) {
-
-        Toast.makeText(this, "Now Calling", Toast.LENGTH_SHORT).show();
         Intent landing = new Intent(this, LandingActivity.class);
         startActivity(landing);
-
     }
 
-    //TODO: This method is very inefficient but used for developing a minimum viable product.
-    // Heavy Optimizations will be done later.
     public void updateAllClients(final ArrayList<ClientScanResult> clients) {
         Runnable runnable = new Runnable() {
             @Override
@@ -258,14 +245,36 @@ public class MainActivity extends Activity {
 
     @Override
     public void onResume() {
+        Log.d(TAG, "Starting service");
         super.onResume();
         startService(new Intent(this, UpdateService.class));
+        AsyncTask task = new AsyncTask() {
+            @Override
+            protected Object doInBackground(Object[] params) {
+                //Initialize the database connection. We do not use it now and just prepare it for later use
+                if (dbHelper == null) {
+                    dbHelper = new MessageHistoryDbHelper(MainActivity.this);
+                }
+                return null;
+            }
+        };
+        task.execute();
     }
 
     @Override
     public void onPause() {
+        Log.d(TAG, "Stopping service");
         super.onPause();
         stopService(new Intent(this, UpdateService.class));
+    }
+
+    @Override
+    protected void onDestroy() {
+        super.onDestroy();
+        if (dbHelper != null) {
+            dbHelper.close();
+            dbHelper = null;
+        }
     }
 
     private void buildAlertMessageNoGps() {

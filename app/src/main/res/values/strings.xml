@@ -1,8 +1,13 @@
 <resources>
     <string name="app_name">CrisisConnect</string>
-
-
+    <string name="option_voice">Voice Call</string>
+    <string name="option_video">Video Call</string>
+    <string name="option_image">Share Image</string>
+    <string name="option_text">Chat</string>
+    <string name="option_chat_activity_send_image">Capture Image</string>
     <string name="title_activity_incallui">Call</string>
     <string name="drawer_open_string">Open</string>
     <string name="drawer_close_string">Close</string>
+    <string name="send">Send</string>
+    <string name="chat_hint">Enter your message</string>
 </resources>

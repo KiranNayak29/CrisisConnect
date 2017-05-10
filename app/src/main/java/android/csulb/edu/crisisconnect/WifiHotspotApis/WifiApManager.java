@@ -30,13 +30,15 @@ import java.net.InetAddress;
 import java.util.ArrayList;
 
 public class WifiApManager {
-	private final WifiManager mWifiManager;
+    private static final String TAG = "WifiApManager";
+    public static ArrayList<ClientScanResult> results = new ArrayList<ClientScanResult>();
+    private final WifiManager mWifiManager;
 	private Context context;
-	public static ArrayList<ClientScanResult> results = new ArrayList<ClientScanResult>();
+
 	public WifiApManager(Context context) {
 		this.context = context;
-		mWifiManager = (WifiManager) this.context.getSystemService(Context.WIFI_SERVICE);
-	}
+        mWifiManager = (WifiManager) context.getApplicationContext().getSystemService(Context.WIFI_SERVICE);
+    }
 
 	/**
 	 * Start AccessPoint mode with the specified
@@ -148,18 +150,17 @@ public class WifiApManager {
 	 */
 	public void getClientList(final boolean onlyReachables, final int reachableTimeout, final FinishScanListener finishListener) {
 
-
-		Runnable runnable = new Runnable() {
+        Log.d(TAG, "Searching client list");
+        Runnable runnable = new Runnable() {
 			public void run() {
-
-				BufferedReader br = null;
-			final ArrayList<ClientScanResult> result = new ArrayList<ClientScanResult>();
-				
-				try {
+                BufferedReader br = null;
+                final ArrayList<ClientScanResult> result = new ArrayList<ClientScanResult>();
+                try {
 					br = new BufferedReader(new FileReader("/proc/net/arp"));
 					String line;
 					while ((line = br.readLine()) != null) {
-						String[] splitted = line.split(" +");
+                        Log.d(TAG, "line - " + line);
+                        String[] splitted = line.split(" +");
 
 						if ((splitted != null) && (splitted.length >= 4)) {
 							// Basic sanity check
@@ -185,8 +186,8 @@ public class WifiApManager {
 						Log.e(this.getClass().toString(), e.getMessage());
 					}
 				}
-
-				// Get a handler that can be used to post to the main thread
+                Log.d(TAG, "Finishing scan");
+                // Get a handler that can be used to post to the main thread
 				Handler mainHandler = new Handler(context.getMainLooper());
 				Runnable myRunnable = new Runnable() {
 					@Override
