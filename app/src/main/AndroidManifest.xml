@@ -18,12 +18,14 @@
     <uses-feature
         android:name="android.hardware.camera"
         android:required="true" />
+    <uses-feature android:name="android.hardware.location.gps" android:required="true"/>
     <application
         android:allowBackup="true"
         android:icon="@mipmap/ic_launcher"
         android:label="@string/app_name"
         android:roundIcon="@mipmap/ic_launcher_round"
         android:supportsRtl="true"
+        android:screenOrientation="portrait"
         android:theme="@style/AppTheme">
         <activity android:name=".MainActivity">
             <intent-filter>
@@ -34,10 +36,19 @@
         </activity>
         <activity
             android:name=".Calling.LandingActivity"
-            android:label="NotConnected" />
-        <!--android:theme="@style/Theme.AppCompat.Light.DarkActionBar" />-->
-        <activity android:name=".Calling.InCallActivity" />
-        <!--android:theme="@style/Theme.AppCompat.Light.DarkActionBar" />-->
+            android:label="Crisis Connect!"
+            android:theme="@style/Theme.AppCompat.Light.DarkActionBar"
+            android:screenOrientation="portrait"/>
+
+        <activity android:name=".Calling.InCallActivity"
+        android:theme="@style/Theme.AppCompat.Light.DarkActionBar"
+            android:screenOrientation="portrait"/>
+        <activity android:name=".Calling.InVideoCall"
+            android:theme="@style/Theme.AppCompat.Light.DarkActionBar"
+            android:screenOrientation="portrait"/>
+        <activity android:name=".ChatActivity"
+            android:theme="@style/Theme.AppCompat.Light.DarkActionBar"
+            android:screenOrientation="portrait"/>
         <activity android:name=".SearchNetworks" />
 
         <service
@@ -47,7 +58,7 @@
         <service android:name="net.majorkernelpanic.streaming.rtsp.RtspServer" />
         <service android:name=".Services.UpdateService" />
 
-        <activity android:name=".ChatActivity" />
+
         <provider
             android:name="android.support.v4.content.FileProvider"
             android:authorities="saveimage.fileprovider"

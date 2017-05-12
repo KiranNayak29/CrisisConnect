@@ -55,7 +55,7 @@
         android:layout_alignParentStart="true"
         android:layout_marginLeft="30dp"
         android:background="@mipmap/ic_launcher_round"
-         />
+        />
     <TextView
         android:layout_width="50dp"
         android:layout_height="50dp"
@@ -86,16 +86,12 @@
         />
     <!--
     calculation for aligning the two images:
-
     centerImage dimension: d1 (height=width)
      outerRing dimension: d2   (height=width)
      marginLeft(centerImage):L1
      marginTop(centerImage):T1
-
      Then,
       marginLeft(outerRing)=L1-((d2-d1)/2)
      marginTop(outerRing)  =T1-((d2-d1)/2)
-
-
      -->
 </RelativeLayout>

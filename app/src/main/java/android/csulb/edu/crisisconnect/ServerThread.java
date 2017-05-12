@@ -32,7 +32,7 @@ public class ServerThread extends Thread {
         try {
             serverSocket = new ServerSocket(PORT);
             Log.i(TAG, "Started server on port " + PORT);
-            Log.e(TAG, "Local address server thread: " + serverSocket);
+            Log.i(TAG, "Local address server thread: " + serverSocket);
             while (!this.isInterrupted()) {
                 Socket client = serverSocket.accept();
                 ConnectedClientThread clientThread = new ConnectedClientThread(ctx, client);

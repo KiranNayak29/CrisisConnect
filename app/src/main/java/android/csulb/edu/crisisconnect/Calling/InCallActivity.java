@@ -5,6 +5,7 @@ import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
 import android.csulb.edu.crisisconnect.R;
+import android.media.AudioManager;
 import android.media.MediaPlayer;
 import android.os.Bundle;
 import android.os.CountDownTimer;
@@ -60,7 +61,7 @@ public class InCallActivity extends AppCompatActivity implements MediaPlayer.OnB
         otherIP=getIntent().getStringExtra(Util.KEY_OTHER_IP);
         otherUserName=getIntent().getStringExtra(Util.KEY_OTHER_USERNAME);
         outgoing=getIntent().getBooleanExtra(Util.KEY_OUTGOING, true);
-                ((TextView) findViewById(R.id.inCallTargetUsername)).setText(otherUserName);
+        ((TextView) findViewById(R.id.inCallTargetUsername)).setText(otherUserName);
         minsTV= (TextView) findViewById(R.id.inCallMins);
         secsTV= (TextView) findViewById(R.id.inCallSecs);
 
@@ -95,6 +96,7 @@ public class InCallActivity extends AppCompatActivity implements MediaPlayer.OnB
         //we're here which means a call was accepted; connect to the other ip!
         mp=new MediaPlayer();
         mp.setOnBufferingUpdateListener(this);
+      //  mp.setAudioStreamType(AudioManager.STREAM_VOICE_CALL);
         mp.setOnCompletionListener(this);
         mp.setOnErrorListener(this);
         mp.setOnInfoListener(this);
@@ -132,7 +134,7 @@ public class InCallActivity extends AppCompatActivity implements MediaPlayer.OnB
         circle2.setAnimation(a);
 
         //timer time
-                cTimer=new CountDownTimer(Long.MAX_VALUE,1000) {
+        cTimer=new CountDownTimer(Long.MAX_VALUE,1000) {
             @Override
             public void onTick(long millisUntilFinished) {
                 secsElapsed++;
@@ -213,7 +215,7 @@ public class InCallActivity extends AppCompatActivity implements MediaPlayer.OnB
 
     @Override
     protected void onPause() {
-     LocalBroadcastManager.getInstance(this).unregisterReceiver(incomingCallBroadcastReceiver);
+        LocalBroadcastManager.getInstance(this).unregisterReceiver(incomingCallBroadcastReceiver);
         super.onPause();
     }
 

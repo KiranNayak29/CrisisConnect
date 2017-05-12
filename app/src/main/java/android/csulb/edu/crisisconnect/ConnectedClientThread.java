@@ -46,6 +46,8 @@ class ConnectedClientThread extends Thread {
         byte[] bufferData = new byte[16384];
         int datatype = 0;
         int numOfPackets = 0;
+        double latitude = 0;
+        double longitude = 0;
         ByteArrayOutputStream bos = new ByteArrayOutputStream();
         while (!this.isInterrupted()) {
             try {
@@ -66,6 +68,10 @@ class ConnectedClientThread extends Thread {
                 if (numOfPackets == 0) {
                     numOfPackets = tempByteBuffer.getInt();
                     Log.d(TAG, "Number of packets to receive: " + numOfPackets);
+                }
+                if (datatype == Constants.MESSAGE_TYPE_IMAGE && latitude == 0 && longitude == 0) {
+                    latitude = tempByteBuffer.getDouble();
+                    longitude = tempByteBuffer.getDouble();
                 }
                 byte[] dst = new byte[tempByteBuffer.remaining()];
                 tempByteBuffer.get(dst);
@@ -96,6 +102,8 @@ class ConnectedClientThread extends Thread {
                         values.put(Messages.COLUMN_NAME_RECEIVER, clientSocket.getInetAddress().getHostAddress());
                         values.put(Messages.COLUMN_NAME_MESSAGE_TYPE, Constants.MESSAGE_TYPE_IMAGE);
                         values.put(Messages.COLUMN_NAME_MESSAGE, imageFile.getAbsolutePath());
+                        values.put(Messages.COLUMN_NAME_LATITUDE, latitude);
+                        values.put(Messages.COLUMN_NAME_LONGITUDE, longitude);
                         db.insert(Messages.TABLE_NAME, null, values);
                         Intent updateChat = new Intent(Constants.BROADCAST_UPDATE_CHAT);
                         LocalBroadcastManager.getInstance(ctx).sendBroadcast(updateChat);

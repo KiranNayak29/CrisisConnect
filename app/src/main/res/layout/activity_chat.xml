@@ -35,11 +35,11 @@
             android:hint="@string/chat_hint"
             android:maxLength="100" />
 
-        <!--<ImageView
+        <ImageView
             android:id="@+id/fullscreen_image"
             android:layout_width="match_parent"
             android:layout_height="match_parent"
-            android:visibility="gone"/>-->
+            android:visibility="gone"/>
 
     </RelativeLayout>
 

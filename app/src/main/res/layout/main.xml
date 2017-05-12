@@ -2,22 +2,58 @@
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="fill_parent"
     android:layout_height="fill_parent"
-    android:orientation="vertical" >
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:orientation="vertical"
+    android:background="#009688">
 <ListView
     android:id="@+id/clntlst"
     android:layout_width="match_parent"
-    android:layout_height="wrap_content" />
+    android:layout_height="wrap_content"
+    android:visibility="gone"/>
     <TextView
         android:id="@+id/textView1"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:text="TextView" >
+        android:text="TextView"
+        android:visibility="gone">
     </TextView>
-    <Button
-        android:layout_width="wrap_content"
+
+    <ImageView
+        android:layout_width="match_parent"
+        android:layout_height="0dp"
+        android:layout_weight="1"
+        app:srcCompat="@drawable/unnamed"
+        android:id="@+id/imageView"
+        android:scaleType="centerCrop"/>
+
+    <TextView
+        android:text="Welcome TO Crisis Connect"
+        android:layout_width="match_parent"
         android:layout_height="wrap_content"
+        android:id="@+id/textView3"
+        android:textSize="45sp"
+        android:background="#F66836"
+        android:textColor="@android:color/white"
+        android:padding="16dp"/>
+
+
+
+    <Button
+        android:text="GET CONNECTED!"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:id="@+id/button"
+        android:background="#00897B"
+        android:textSize="25sp"
+
+        android:textColor="@android:color/white"
+
+        android:gravity="left"
+        android:padding="16dp"
         android:onClick="calls"
-        android:text="Place calls" />
+
+        />
+
 
 
 </LinearLayout>

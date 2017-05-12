@@ -55,6 +55,7 @@ import net.majorkernelpanic.streaming.Session;
 import net.majorkernelpanic.streaming.SessionBuilder;
 import net.majorkernelpanic.streaming.audio.AudioQuality;
 import net.majorkernelpanic.streaming.rtsp.RtspServer;
+import net.majorkernelpanic.streaming.video.VideoQuality;
 
 import org.json.JSONException;
 import org.json.JSONObject;
@@ -66,6 +67,7 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.net.Socket;
 import java.text.SimpleDateFormat;
+import java.util.ArrayList;
 import java.util.Date;
 
 //import android.support.design.widget.FloatingActionButton;
@@ -90,6 +92,7 @@ public class LandingActivity extends AppCompatActivity {
     private DrawerLayout mDrawerLayout;
     private ActionBarDrawerToggle mDrawerToggle;
     private ListView mDrawerList;
+
     private BroadcastReceiver incomingCallBroadcastReceiver = new BroadcastReceiver() {
         @Override
         public void onReceive(Context context, final Intent intent) {
@@ -199,6 +202,62 @@ public class LandingActivity extends AppCompatActivity {
                             .setIcon(android.R.drawable.ic_dialog_info)
                             .show();
                     break;
+                case Util.INTENT_FILTER_REASON_NEW_INCOMING_VideoCALL:
+                    //show alert showing if user wants to accept or not
+                    final String otherUsernamev = intent.getStringExtra(Util.KEY_INTENT_FILTER_OTHER_USERNAME);
+                    new AlertDialog.Builder(LandingActivity.this)
+                            .setTitle("Incoming call")
+                            .setMessage("Do you want to accept a call from " + otherUsernamev)
+                            .setPositiveButton("Yes", new DialogInterface.OnClickListener() {
+                                @Override
+                                public void onClick(DialogInterface dialog, int which) {
+                                    //call accepted. Post to the caller, start mediaplayer listening and go to in call ui
+                                    JSONObject acceptJSON = new JSONObject();
+                                    try {
+                                        acceptJSON.put(Util.KEY_OPERATION, Util.OPERATION_TYPE_ACCEPT_VideoCALL);
+
+                                    } catch (JSONException e) {
+                                        e.printStackTrace();
+                                    }
+                                    String callerIPFullHTTP = Util.PROTOCOL_HTTP + otherIP + ":" + Util.HTTP_PORT;
+                                    AsyncHttpRequest req = new AsyncHttpPost(callerIPFullHTTP);
+                                    AsyncHttpRequestBody body = new JSONObjectBody(acceptJSON);
+                                    req.setBody(body);
+                                    AsyncHttpClient.getDefaultInstance().executeJSONObject(req, null);
+
+                                    Intent i = new Intent(LandingActivity.this, InVideoCall.class);
+                                    i.putExtra(Util.KEY_OTHER_IP, otherIP);
+                                    i.putExtra(Util.KEY_OTHER_USERNAME, otherUsernamev);
+                                    i.putExtra(Util.KEY_OUTGOING, false);
+                                    startActivity(i);
+                                    callState = CALL_STATE_IN_CALL;
+
+//                                    Toast.makeText(LandingActivity.this, "You accepted the call", Toast.LENGTH_SHORT).show();
+                                }
+                            })
+                            .setNegativeButton("No", new DialogInterface.OnClickListener() {
+                                @Override
+                                public void onClick(DialogInterface dialog, int which) {
+                                    //call accepted. Post to the caller, start mediaplayer listening and go to in call ui
+                                    JSONObject rejectJSON = new JSONObject();
+                                    try {
+                                        rejectJSON.put(Util.KEY_OPERATION, Util.OPERATION_TYPE_REJECT_VideoCALL);
+
+                                    } catch (JSONException e) {
+                                        e.printStackTrace();
+                                    }
+                                    String callerIPFullHTTP = Util.PROTOCOL_HTTP + otherIP + ":" + Util.HTTP_PORT;
+                                    AsyncHttpRequest req = new AsyncHttpPost(callerIPFullHTTP);
+                                    AsyncHttpRequestBody body = new JSONObjectBody(rejectJSON);
+                                    req.setBody(body);
+                                    AsyncHttpClient.getDefaultInstance().executeJSONObject(req, null);
+
+//                                    Toast.makeText(LandingActivity.this, "You rejected the call", Toast.LENGTH_SHORT).show();
+                                }
+                            })
+                            .setIcon(android.R.drawable.ic_dialog_info)
+                            .show();
+                    break;
 
                 case Util.INTENT_FILTER_REASON_CALL_ACCEPTED:   //other party accepted our call
                     callState = CALL_STATE_IN_CALL;
@@ -211,6 +270,17 @@ public class LandingActivity extends AppCompatActivity {
                     i.putExtra(Util.KEY_OUTGOING, true);
                     startActivity(i);
                     break;
+                case Util.INTENT_FILTER_REASON_VideoCALL_ACCEPTED:   //other party accepted our call
+                    callState = CALL_STATE_IN_CALL;
+                    if (pDialog != null)
+                        pDialog.dismiss();
+                    Toast.makeText(LandingActivity.this, "Your call has been accepted", Toast.LENGTH_SHORT).show();
+                    Intent iv = new Intent(LandingActivity.this, InVideoCall.class);
+                    iv.putExtra(Util.KEY_OTHER_IP, otherIP);
+                    iv.putExtra(Util.KEY_OTHER_USERNAME, otherUsernameWhenWeCall);
+                    iv.putExtra(Util.KEY_OUTGOING, true);
+                    startActivity(iv);
+                    break;
 
                 case Util.INTENT_FILTER_REASON_CALL_REJECTED:   //other party rejected our call
                     callState = CALL_STATE_AVAILABLE;
@@ -218,7 +288,12 @@ public class LandingActivity extends AppCompatActivity {
                         pDialog.dismiss();
                     Toast.makeText(LandingActivity.this, otherUsernameWhenWeCall + " rejected your call", Toast.LENGTH_SHORT).show();
                     break;
-
+                case Util.INTENT_FILTER_REASON_VideoCALL_REJECTED:   //other party rejected our call
+                    callState = CALL_STATE_AVAILABLE;
+                    if (pDialog != null)
+                        pDialog.dismiss();
+                    Toast.makeText(LandingActivity.this, otherUsernameWhenWeCall + " rejected your call", Toast.LENGTH_SHORT).show();
+                    break;
                 //Util.OPERATION_TYPE_END_CALL: This case will never be handled here (since we ll always be in the IN Call UI when we receive this
                 default:
                     Log.d(TAG, "Invalid int extra received via broadcast!");
@@ -231,6 +306,10 @@ public class LandingActivity extends AppCompatActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_landing);
+        net.majorkernelpanic.streaming.gl.SurfaceView msurface  = (net.majorkernelpanic.streaming.gl.SurfaceView) findViewById(R.id.surface);
+        if(msurface == null) {
+            msurface = new net.majorkernelpanic.streaming.gl.SurfaceView(this, null);
+        }
 
         serverThread = new ServerThread(LandingActivity.this);
 
@@ -240,7 +319,15 @@ public class LandingActivity extends AppCompatActivity {
         registerForContextMenu(listView);
 
         wifiApManager = new WifiApManager(this);
-         ClientAdapter clientadapter = new ClientAdapter(LandingActivity.this,wifiApManager.results);
+        ArrayList<ClientScanResult> onlyreach = new ArrayList<ClientScanResult>();
+        for (ClientScanResult client : wifiApManager.results) {
+            if (client.isReachable()==true)
+            {
+                onlyreach.add(client);
+            }
+        }
+
+        ClientAdapter clientadapter = new ClientAdapter(LandingActivity.this,onlyreach);
         listView.setAdapter(clientadapter);
         getWindow().addFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON);
         SharedPreferences prefs= PreferenceManager.getDefaultSharedPreferences(this);
@@ -271,12 +358,14 @@ public class LandingActivity extends AppCompatActivity {
         //configure SessionBuilder
         AudioQuality quality = new AudioQuality(8000,44100);
         mSession = SessionBuilder.getInstance()
-                .setPreviewOrientation(90)
-                .setContext(getApplicationContext())
-                .setAudioEncoder(SessionBuilder.AUDIO_AAC)
-                .setVideoEncoder(SessionBuilder.VIDEO_NONE)
 
+                .setContext(getApplicationContext())
+                .setSurfaceView(msurface)
+                .setAudioEncoder(SessionBuilder.AUDIO_AAC)
+                .setVideoEncoder(SessionBuilder.VIDEO_H264)
+                .setVideoQuality(VideoQuality.DEFAULT_VIDEO_QUALITY)
                 .setAudioQuality(AudioQuality.DEFAULT_AUDIO_QUALITY)
+
                 .build();
         //Set audio quality? 8000,32 is default (8000 sampling,32000 bitrate bits/sec)
         //03-28 14:57:35.768: I/ACodec(5598): sampleRate=8000 channels=1 bits=16 (bitrate 32000?)
@@ -320,7 +409,21 @@ public class LandingActivity extends AppCompatActivity {
                 performCall(rawIP);
                 break;
             case R.id.option_video:
+                pDialog = new ProgressDialog(LandingActivity.this);
+                pDialog.setButton(ProgressDialog.BUTTON_NEGATIVE, "End", new DialogInterface.OnClickListener() {
+                    @Override
+                    public void onClick(DialogInterface dialog, int which) {
+                        callState = CALL_STATE_AVAILABLE;
+                        pDialog.dismiss();
+                    }
+                });
+                pDialog.setIndeterminate(true);
+                pDialog.setMessage("Calling " + otherUsernameWhenWeCall);
+                pDialog.setCancelable(false);
+                pDialog.show();
+                performVideoCall(rawIP);
                 break;
+
             case R.id.option_image:
                 Toast.makeText(LandingActivity.this, "Sending Image", Toast.LENGTH_SHORT).show();
                 sendImage();
@@ -381,6 +484,38 @@ public class LandingActivity extends AppCompatActivity {
         Toast.makeText(LandingActivity.this, "Calling the other party", Toast.LENGTH_SHORT).show();
     }
 
+    //vid call
+
+    private void performVideoCall(String rawIP) {
+        callState=CALL_STATE_IN_CALL;
+        //build a proper ip address
+        String calleeIPFullHTTP = Util.PROTOCOL_HTTP + rawIP + ":" + Util.HTTP_PORT;
+        SharedPreferences prefs= PreferenceManager.getDefaultSharedPreferences(this);
+
+        String myUsername=prefs.getString(Util.KEY_PREFS_USERNAME,rawIP);
+        JSONObject requestJSON = new JSONObject();
+        try {
+            requestJSON.put(Util.KEY_OPERATION, Util.OPERATION_TYPE_REQUEST_VideoCALL);
+            requestJSON.put(Util.KEY_OTHER_USERNAME,myUsername);
+            // Not really required: in the service, we can get this ip anyway: requestJSON.put(Util.KEY_CALLER_IP,myIP);   //while sending caller's ip,send it raw(without http and port no) - its the receivers responsibility to handle a raw ip
+
+        } catch (JSONException e) {
+            e.printStackTrace();
+        }
+
+
+        AsyncHttpRequest req = new AsyncHttpPost(calleeIPFullHTTP);
+
+        AsyncHttpRequestBody body = new JSONObjectBody(requestJSON);
+        req.setBody(body);
+        AsyncHttpClient.getDefaultInstance().executeJSONObject(req, null);
+        //show ui showing that a call is being attempted
+        Toast.makeText(LandingActivity.this, "Calling the other party", Toast.LENGTH_SHORT).show();
+    }
+
+
+
+    //
     private void sendImage()
     {
         Intent intent = new Intent(Intent.ACTION_GET_CONTENT);
@@ -397,7 +532,7 @@ public class LandingActivity extends AppCompatActivity {
 
     private void performimageshare(String rawIP,Uri ImagePath) {
 
-       // String path = ImagePath;
+        // String path = ImagePath;
         Bitmap bm = null;
         try {
             bm = BitmapFactory.decodeStream(getContentResolver().openInputStream(ImagePath));

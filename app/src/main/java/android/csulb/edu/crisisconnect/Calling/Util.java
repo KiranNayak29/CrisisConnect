@@ -14,6 +14,10 @@ public class Util {
     public static  final int OPERATION_TYPE_END_CALL=3;
     public static  final int OPERATION_TYPE_REQUEST_IMAGE=4;
     public static  final int OPERATION_TYPE_ACCEPT_IMAGE=5;
+    public static  final int OPERATION_TYPE_REQUEST_VideoCALL=6;
+    public static  final int OPERATION_TYPE_ACCEPT_VideoCALL=7;
+    public static  final int OPERATION_TYPE_REJECT_VideoCALL=8;
+    public static  final int OPERATION_TYPE_END_VideoCALL=9;
 //    public static  final int DECISION_TYPE_ACCEPT=2;
 //    public static  final int DECISION_TYPE_REJECT=3;
 
@@ -28,6 +32,10 @@ public class Util {
     public static final int INTENT_FILTER_REASON_NEW_INCOMING_IMAGE =4;
     public static final int INTENT_FILTER_REASON_IMAGE_ACCEPTED =5;
     public static final int INTENT_FILTER_REASON_NO_REASON =99;
+    public static final int INTENT_FILTER_REASON_NEW_INCOMING_VideoCALL =6;
+    public static final int INTENT_FILTER_REASON_VideoCALL_ACCEPTED =7;  //accepted by other party
+    public static final int INTENT_FILTER_REASON_VideoCALL_REJECTED =8;  //rejected by other party
+    public static final int INTENT_FILTER_REASON_VideoCALL_ENDED =9;
 
     //shared preferences
     public static final String KEY_PREFS_USERNAME="usernamekey";

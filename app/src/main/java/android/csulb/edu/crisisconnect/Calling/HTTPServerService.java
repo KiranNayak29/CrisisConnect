@@ -58,6 +58,12 @@ public class HTTPServerService extends Service {
                                                 i.putExtra(Util.KEY_INTENT_FILTER_OTHER_USERNAME, reqJSON.getString(Util.KEY_OTHER_USERNAME));
                                             }
                                             break;
+                                            case Util.OPERATION_TYPE_REQUEST_VideoCALL: {
+                                                //send broascast to activities and show them a accept/reject interface
+                                                i.putExtra(Util.KEY_INTENT_FILTER_REASON, Util.INTENT_FILTER_REASON_NEW_INCOMING_VideoCALL);
+                                                i.putExtra(Util.KEY_INTENT_FILTER_OTHER_USERNAME, reqJSON.getString(Util.KEY_OTHER_USERNAME));
+                                            }
+                                            break;
                                             case Util.OPERATION_TYPE_REQUEST_IMAGE: {
                                                 //send broascast to activities and show them a accept/reject interface
                                                 i.putExtra(Util.KEY_INTENT_FILTER_REASON, Util.INTENT_FILTER_REASON_NEW_INCOMING_IMAGE);
@@ -70,9 +76,21 @@ public class HTTPServerService extends Service {
                                                 //TODO: Do something
                                             }
                                             break;
+                                            case Util.OPERATION_TYPE_END_VideoCALL: {
+                                                i.putExtra(Util.KEY_INTENT_FILTER_REASON, Util.INTENT_FILTER_REASON_VideoCALL_ENDED);
+                                                //TODO: Do something
+                                            }
+                                            break;
                                             case Util.OPERATION_TYPE_ACCEPT_CALL: {
                                                 //TODO: Do something
                                                 i.putExtra(Util.KEY_INTENT_FILTER_REASON, Util.INTENT_FILTER_REASON_CALL_ACCEPTED);
+
+                                                Log.d(TAG, "CAllee accepted call");
+                                            }
+                                            break;
+                                            case Util.OPERATION_TYPE_ACCEPT_VideoCALL: {
+                                                //TODO: Do something
+                                                i.putExtra(Util.KEY_INTENT_FILTER_REASON, Util.INTENT_FILTER_REASON_VideoCALL_ACCEPTED);
 
                                                 Log.d(TAG, "CAllee accepted call");
                                             }
@@ -86,6 +104,11 @@ public class HTTPServerService extends Service {
                                             break;
                                             case Util.OPERATION_TYPE_REJECT_CALL: {
                                                 i.putExtra(Util.KEY_INTENT_FILTER_REASON, Util.INTENT_FILTER_REASON_CALL_REJECTED);
+                                                Log.d(TAG, "CAllee rejectedcall");
+                                            }
+                                            break;
+                                            case Util.OPERATION_TYPE_REJECT_VideoCALL: {
+                                                i.putExtra(Util.KEY_INTENT_FILTER_REASON, Util.INTENT_FILTER_REASON_VideoCALL_REJECTED);
                                                 Log.d(TAG, "CAllee rejectedcall");
                                             }
                                             break;
