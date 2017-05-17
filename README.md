@@ -13,11 +13,7 @@ can stream audio/video over RTP. When a peer is connected to the server peer, th
 new client and start communicating with it.
 
 
-As on 4/7/2017
-
-Status : Project is about 65% complete.
-
-Completed features :
+Features:
 1. Choice to be group owner (start hotspot on single click) 
 2. Choice to be a client (Search and connect to a hotspot network on click)
 3. Group owner pushes IP of all clients to every client
@@ -25,13 +21,11 @@ Completed features :
 5. Image sharing achieved.
 6. Audio Calling achieved.
 7. Connectivity is achieved not only between Group owner and client but also between clients.
-
-Features to be completed.
-1. Send Lat lang coordinated along with images.
-2. Feature to access these coordinates on Google maps. (we will have a offline saved map of the disaster prone area).
-3. Video calling.
-4. Texting
-5. UI improvements.
+8. Send Lat lang coordinated along with images.
+9. Feature to access these coordinates on Google maps. (we will have a offline saved map of the disaster prone area).
+10. Video calling.
+11. Texting
+12. UI improvements.
 
 New Learning:
 1. Issue: Communication was only possible between Group owner and clients. Connectivity between clients was not possible.<br/>
@@ -45,7 +39,7 @@ New Learning:
 3. Issues: Variety in Android versions. API level below 23 do not require WRITE_SETTINGS permissions for using WiFi hotspot. Also new API
    24 requires content providers for sharing files.<br/>
    Solution : We have provided support for every problem encountered.
-   
+4. Setting up RTSP server for live streaming   
    
 
    
